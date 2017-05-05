@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import logging
 
@@ -56,9 +57,12 @@ def draw_marks(im, factor=10, save_filename='out.png'):
 	draw = ImageDraw.Draw(im2)
 	draw.ellipse(cursor[0], cursor[1], centre[0], centre[1])
 
-	im2.save(filename)
+	im2.save(save_filename)
 	return im2
 
 
 if __name__ == "__main__":
-    app.run()
+	ip, port = '127.0.0.1', 3000
+	if os.environ.get('ENV') == 'c9':
+		ip, port = '0.0.0.0', 8080
+	app.run(ip, port)
