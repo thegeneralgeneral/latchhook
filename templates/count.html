@@ -1,19 +1,22 @@
 <!doctype html>
 <html>
 <body>
+
 <table border="1px">
-<tr><th>Color</th><th>Hex</th><th>Count</th></tr>
+<tr><th></th></th><th>Color</th><th>Hex</th><th>Count</th></tr>
 {% for hex, count in color_count|dictsort %}
 <tr>
-<td style="width: 50px; background-color: {{hex}}"></td>
-<td style="width: 70px">{{hex|safe}}</td>
+<td><input type="checkbox"/></td>
+<td style="width: 50px; background-color: #{{hex}}"><img src="static/{{hex}}.png"/></td>
+<td>#{{hex|safe}}</td>
 <td style="width: 30px">{{count|safe}}</td>
 <td style="width: 70px">{{count/320}}</td>
 <td style="width: 70px">{{count//320 + 1}}</td>
-
 </tr>
 {% endfor %}
 </table>
 Total: {{total}}
+<br>
+<img src="static/out.png" />
 </body>
 </html>

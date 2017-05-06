@@ -1,5 +1,18 @@
 from PIL import Image, ImageDraw
 
+DRAW_FNS = [
+	ImageDraw.Draw.ellipse
+]
+
+def construct_draw_map(im, color_list):
+	# Map each color to a method that knows how to draw a shape
+	print '# of colors: ' % len(color_list)
+	draw_map = {}
+	for i, color in enumerate(color_list):
+		print '%s: %s' % (i, color)
+		method = DRAW_FNS[len(DRAW_FNS%i)]
+		draw_map[color] = method
+	return 
 
 
 
@@ -21,15 +34,15 @@ def draw_marks(im, factor=10, save_filename='out.png'):
 
 	return im2
 
-def draw(im, x, y, factor):
+def draw(im, x, y, factor, method):
 	d = ImageDraw.Draw(im)
 	d.ellipse((x, y, x+factor, y+factor))
 
 
-im = Image.open("../nyan_pattern_pixel.png")
+# im = Image.open("../nyan_pattern_pixel.png")
 
-im2 = draw_marks(im)
+# im2 = draw_marks(im)
 
-filename = 'out.png'
+# filename = 'out.png'
 
-im2.save(filename)
+# im2.save(filename)
