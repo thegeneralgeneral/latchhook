@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import logging
 
@@ -118,83 +119,12 @@ def mark_image(im, color_count, factor=20, out_filename="out.png"):
         c = y * factor
         d.line([(0, c), (im2.size[1], c)], fill=color)
 
-    im2.save('static/' + out_filename)
-
-
-#############################################
-# Shape draw-ers.
-#
-
-def draw_blank(d, origin, factor, color):
-    pass
-
-
-def draw_ellipse(d, origin, factor, color):
-    shrink = factor / 4
-    e_origin = (origin[0] + shrink, origin[1] + shrink)
-    e_opposite = (origin[0] + factor - shrink, origin[1] + factor - shrink)
-    d.ellipse([e_origin, e_opposite], outline=color)
-
-
-def draw_dot(d, origin, factor, color):
-    size = factor / 10
-    centre = (origin[0] + factor / 2, origin[1] + factor / 2)
-    d.ellipse([(centre[0] - size / 2, centre[1] - size / 2),
-               (centre[0] + size / 2, centre[1] + size / 2)],
-              outline=color)
-
-
-def draw_three_dots(d, origin, factor, color):
-    shrink = factor / 3
-    width = height = factor - (2 * shrink)
-    t_origin = (origin[0] + shrink, origin[1] + shrink)
-    top_pt = (t_origin[0] + width / 2, t_origin[1])
-    left_pt = (t_origin[0], t_origin[1] + height)
-    right_pt = (t_origin[0] + width, t_origin[1] + height)
-
-    def draw_one_dot(d, radius, point, color):
-        d.ellipse([(point[0] - radius, point[1] - radius),
-                   (point[0] + radius, point[1] + radius)],
-                  outline=color)
-
-    for pt in [top_pt, left_pt, right_pt]:
-        draw_one_dot(d, 1, pt, color)
-
-
-def draw_square(d, origin, factor, color):
-    shrink = factor / 5
-    s_origin = (origin[0] + shrink, origin[1] + shrink)
-    s_opposite = (origin[0] + factor - shrink, origin[1] + factor - shrink)
-    d.rectangle([s_origin, s_opposite], outline=color)
-
-
-def draw_line(d, origin, factor, color):
-    shrink = factor / 4
-    s_origin = (origin[0] + shrink, origin[1] + shrink)
-    s_opposite = (origin[0] + factor - shrink, origin[1] + factor - shrink)
-    d.line([s_origin, s_opposite], fill=color)
-
-
-def draw_triangle(d, origin, factor, color):
-    shrink = factor / 4
-    width = height = factor - (2 * shrink)
-    t_origin = (origin[0] + shrink, origin[1] + shrink)
-    top_pt = (t_origin[0] + width / 2, t_origin[1])
-    left_pt = (t_origin[0], t_origin[1] + height)
-    right_pt = (t_origin[0] + width, t_origin[1] + height)
-    d.line([top_pt, left_pt, right_pt, top_pt], fill=color)
-
-
-def draw_diamond(d, origin, factor, color):
-    shrink = factor / 4
-    width = height = factor - (2 * shrink)
-    t_origin = (origin[0] + shrink, origin[1] + shrink)
-    top_pt = (t_origin[0] + width / 2, t_origin[1])
-    left_pt = (t_origin[0], t_origin[1] + height)
-    right_pt = (t_origin[0] + width, t_origin[1] + height)
-    bottom_pt = ()
-    d.line([top_pt, left_pt, right_pt, top_pt], fill=color)
+	im2.save(save_filename)
+	return im2
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+	ip, port = '127.0.0.1', 3000
+	if os.environ.get('ENV') == 'c9':
+		ip, port = '0.0.0.0', 8080
+	app.run(ip, port)
