@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import logging
 
@@ -10,12 +11,13 @@ app = Flask(__name__)
 
 @app.route("/")
 @app.route("/filename/<filename>")
-def count(filename="../nyan_pattern_pixel.png"):
+def count(filename="./nyan.png"):
     logging.info('filename: %s', filename)
     counts = count_and_mark(filename)
     # counts = get_counts(filename)
     total = sum([count for count in counts.values()])
-    return render_template("count.html", color_count=counts, total=total)
+    return render_template("count.html", color_count=counts, total=total,
+        out_filename='out.png')
 
 
 def count_and_mark(filename):
@@ -197,4 +199,10 @@ def draw_diamond(d, origin, factor, color):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug = False
+    ip, port = '127.0.0.1', 3000
+    if os.environ.get('ENV') == 'c9':
+    	ip, port ='0.0.0.0', 8080
+    	debug = True
+    logging.info("Running on IP {} and port {}".format(ip, port))
+    app.run(ip, port, debug=debug)
