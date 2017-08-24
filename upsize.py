@@ -34,15 +34,6 @@ def draw_marks(im, factor=10, save_filename='out.png'):
 
 	return im2
 
-def draw(im, x, y, factor, method):
+def draw(im, x, y, factor, method=None):
 	d = ImageDraw.Draw(im)
 	d.ellipse((x, y, x+factor, y+factor))
-
-
-# im = Image.open("../nyan_pattern_pixel.png")
-
-# im2 = draw_marks(im)
-
-# filename = 'out.png'
-
-# im2.save(filename)

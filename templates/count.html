@@ -7,7 +7,7 @@
 {% for hex, count in color_count|dictsort %}
 <tr>
 <td><input type="checkbox"/></td>
-<td style="width: 50px; background-color: #{{hex}}"><img src="static/{{hex}}.png"/></td>
+<td style="width: 50px; background-color: #{{hex}}"><img src="/static/{{hex}}.png"/></td>
 <td>#{{hex|safe}}</td>
 <td style="width: 30px">{{count|safe}}</td>
 <td style="width: 70px">{{count/320}}</td>
@@ -17,6 +17,6 @@
 </table>
 Total: {{total}}
 <br>
-<img src="static/out.png" />
+<img src="/static/{{out_filename}}" />
 </body>
 </html>
