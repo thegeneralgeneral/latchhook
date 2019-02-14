@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 import logging
 
@@ -8,27 +9,24 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
+KEY_IMAGE_DIR = "static/images"
 
 @app.route("/")
 @app.route("/filename/<filename>")
 def count(filename="./nyan.png"):
     logging.info('filename: %s', filename)
-    counts = count_and_mark(filename)
-    # counts = get_counts(filename)
+    im = Image.open(filename)
+    counts = count_and_mark(im)
     total = sum([count for count in counts.values()])
     return render_template("count.html", color_count=counts, total=total,
         out_filename='out.png')
 
 
-def count_and_mark(filename):
-    im = Image.open(filename)
-    print 'Format: %s \tSize: %s', (im.format, im.size)
+def count_and_mark(im):
+    print 'Format: %s \tSize: %s' % (im.format, im.size)
     im = im.convert('RGB')
-
     color_count = get_counts(im)
-
     mark_image(im, color_count)
-
     return color_count
 
 
@@ -66,28 +64,29 @@ def get_draw_method_map(color_count):
     return result
 
 
-def mark_image(im, color_count, factor=20, out_filename="out.png"):
+def mark_image(im, color_count, scale=20, out_filename="out.png"):
     # Resize to im2
     w_ = im.size[0]
     h_ = im.size[1]
-    im2 = im.resize((im.size[0] * factor, im.size[1] * factor), Image.NEAREST)
+    im2 = im.resize((im.size[0] * scale, im.size[1] * scale), Image.NEAREST)
 
     method_map = get_draw_method_map(color_count)
 
     # Create key
-
+    shutil.rmtree(KEY_IMAGE_DIR)
+    os.mkdir(KEY_IMAGE_DIR)
     for key, method in method_map.iteritems():
-        f = factor
+        print 'Creating key for (%s, %s)' % (key, method)
         hex_str = '#{}'.format(key)
         print hex_str
-        key_img = Image.new('RGB', (f, f), color=hex_str)
+        key_img = Image.new('RGB', (scale, scale), color=hex_str)
         d = ImageDraw.Draw(key_img)
         r, g, b = ImageColor.getrgb(hex_str)
         brightness = (r + g + b) / 3
         color = 'white'
         if brightness > (255 / 2):
             color = 'black'
-        method(d, (0, 0), f, color)
+        method(d, (0, 0), scale, color)
         key_img.save('static/%s.png' % key)
 
     # Draw markers
@@ -103,9 +102,9 @@ def mark_image(im, color_count, factor=20, out_filename="out.png"):
             hex_key = '{:02x}{:02x}{:02x}'.format(r, g, b)
             fn = method_map.get(hex_key)  # get method by hex string (gross)
             # print '%s => %s' % (hex_key, fn)
-            fn(d, cursor, factor, color)
-            cursor = (cursor[0] + factor, cursor[1])
-        cursor = (0, cursor[1] + factor)
+            fn(d, cursor, scale, color)
+            cursor = (cursor[0] + scale, cursor[1])
+        cursor = (0, cursor[1] + scale)
 
     # Draw grid
     d = ImageDraw.Draw(im2)
@@ -113,11 +112,11 @@ def mark_image(im, color_count, factor=20, out_filename="out.png"):
     primary, highlight = 'black', 'blue'
     for x in range(w_):
         color = highlight if x % grid_highlight_interval == 0 else primary
-        c = x * factor
+        c = x * scale
         d.line([(c, 0), (c, im2.size[0])], fill=color)
     for y in range(h_):
         color = highlight if y % grid_highlight_interval == 0 else primary
-        c = y * factor
+        c = y * scale
         d.line([(0, c), (im2.size[1], c)], fill=color)
 
     im2.save('static/' + out_filename)
@@ -127,28 +126,28 @@ def mark_image(im, color_count, factor=20, out_filename="out.png"):
 # Shape draw-ers.
 #
 
-def draw_blank(d, origin, factor, color):
+def draw_blank(d, origin, scale, color):
     pass
 
 
-def draw_ellipse(d, origin, factor, color):
-    shrink = factor / 4
+def draw_ellipse(d, origin, scale, color):
+    shrink = scale / 4
     e_origin = (origin[0] + shrink, origin[1] + shrink)
-    e_opposite = (origin[0] + factor - shrink, origin[1] + factor - shrink)
+    e_opposite = (origin[0] + scale - shrink, origin[1] + scale - shrink)
     d.ellipse([e_origin, e_opposite], outline=color)
 
 
-def draw_dot(d, origin, factor, color):
-    size = factor / 10
-    centre = (origin[0] + factor / 2, origin[1] + factor / 2)
+def draw_dot(d, origin, scale, color):
+    size = scale / 10
+    centre = (origin[0] + scale / 2, origin[1] + scale / 2)
     d.ellipse([(centre[0] - size / 2, centre[1] - size / 2),
                (centre[0] + size / 2, centre[1] + size / 2)],
               outline=color)
 
 
-def draw_three_dots(d, origin, factor, color):
-    shrink = factor / 3
-    width = height = factor - (2 * shrink)
+def draw_three_dots(d, origin, scale, color):
+    shrink = scale / 3
+    width = height = scale - (2 * shrink)
     t_origin = (origin[0] + shrink, origin[1] + shrink)
     top_pt = (t_origin[0] + width / 2, t_origin[1])
     left_pt = (t_origin[0], t_origin[1] + height)
@@ -163,23 +162,23 @@ def draw_three_dots(d, origin, factor, color):
         draw_one_dot(d, 1, pt, color)
 
 
-def draw_square(d, origin, factor, color):
-    shrink = factor / 5
+def draw_square(d, origin, scale, color):
+    shrink = scale / 5
     s_origin = (origin[0] + shrink, origin[1] + shrink)
-    s_opposite = (origin[0] + factor - shrink, origin[1] + factor - shrink)
+    s_opposite = (origin[0] + scale - shrink, origin[1] + scale - shrink)
     d.rectangle([s_origin, s_opposite], outline=color)
 
 
-def draw_line(d, origin, factor, color):
-    shrink = factor / 4
+def draw_line(d, origin, scale, color):
+    shrink = scale / 4
     s_origin = (origin[0] + shrink, origin[1] + shrink)
-    s_opposite = (origin[0] + factor - shrink, origin[1] + factor - shrink)
+    s_opposite = (origin[0] + scale - shrink, origin[1] + scale - shrink)
     d.line([s_origin, s_opposite], fill=color)
 
 
-def draw_triangle(d, origin, factor, color):
-    shrink = factor / 4
-    width = height = factor - (2 * shrink)
+def draw_triangle(d, origin, scale, color):
+    shrink = scale / 4
+    width = height = scale - (2 * shrink)
     t_origin = (origin[0] + shrink, origin[1] + shrink)
     top_pt = (t_origin[0] + width / 2, t_origin[1])
     left_pt = (t_origin[0], t_origin[1] + height)
@@ -187,9 +186,9 @@ def draw_triangle(d, origin, factor, color):
     d.line([top_pt, left_pt, right_pt, top_pt], fill=color)
 
 
-def draw_diamond(d, origin, factor, color):
-    shrink = factor / 4
-    width = height = factor - (2 * shrink)
+def draw_diamond(d, origin, scale, color):
+    shrink = scale / 4
+    width = height = scale - (2 * shrink)
     t_origin = (origin[0] + shrink, origin[1] + shrink)
     top_pt = (t_origin[0] + width / 2, t_origin[1])
     left_pt = (t_origin[0], t_origin[1] + height)
