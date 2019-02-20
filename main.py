@@ -1,3 +1,4 @@
+#pylint: disable=missing-docstring, invalid-name
 import logging
 import os
 import shutil
@@ -122,6 +123,7 @@ def mark_image(im, color_count, scale=20, out_filename="out.png"):
 # Shape draw-ers.
 #
 
+#pylint: disable=unused-argument
 def draw_blank(d, origin, scale, color):
     pass
 
