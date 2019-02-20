@@ -1,2 +1,5 @@
 static/*
 uploaded/*
+.vscode/*
+.venv/*
+__pycache__

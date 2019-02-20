@@ -1,15 +1,14 @@
-import json
+import logging
 import os
 import shutil
-import sys
-import logging
 
-from PIL import Image, ImageDraw, ImageColor
 from flask import Flask, render_template
+from PIL import Image, ImageDraw, ImageColor
 
 app = Flask(__name__)
 
 KEY_IMAGE_DIR = "static/images"
+
 
 @app.route("/")
 @app.route("/filename/<filename>")
@@ -18,12 +17,11 @@ def count(filename="./nyan.png"):
     im = Image.open(filename)
     counts = count_and_mark(im)
     total = sum([count for count in counts.values()])
-    return render_template("count.html", color_count=counts, total=total,
-        out_filename='out.png')
+    return render_template("count.html", color_count=counts, total=total, out_filename='out.png')
 
 
 def count_and_mark(im):
-    print 'Format: %s \tSize: %s' % (im.format, im.size)
+    logging.info('Format: %s \tSize: %s', im.format, im.size)
     im = im.convert('RGB')
     color_count = get_counts(im)
     mark_image(im, color_count)
@@ -59,7 +57,7 @@ def get_draw_method_map(color_count):
     sorted_color_keys.reverse()
     for i, key in enumerate(sorted_color_keys):
         meth = methods[i % len(methods)]
-        print "%s) %s: %s" % (i, key, meth)
+        logging.info("%s) %s: %s", i, key, meth)
         result[key] = meth
     return result
 
@@ -75,10 +73,9 @@ def mark_image(im, color_count, scale=20, out_filename="out.png"):
     # Create key
     shutil.rmtree(KEY_IMAGE_DIR)
     os.mkdir(KEY_IMAGE_DIR)
-    for key, method in method_map.iteritems():
-        print 'Creating key for (%s, %s)' % (key, method)
+    for key, method in method_map.items():
+        logging.info('Creating key for (%s, %s)', key, method)
         hex_str = '#{}'.format(key)
-        print hex_str
         key_img = Image.new('RGB', (scale, scale), color=hex_str)
         d = ImageDraw.Draw(key_img)
         r, g, b = ImageColor.getrgb(hex_str)
@@ -87,7 +84,7 @@ def mark_image(im, color_count, scale=20, out_filename="out.png"):
         if brightness > (255 / 2):
             color = 'black'
         method(d, (0, 0), scale, color)
-        key_img.save('static/%s.png' % key)
+        key_img.save('static/{}.png'.format(key))
 
     # Draw markers
     d = ImageDraw.Draw(im2)
@@ -100,8 +97,7 @@ def mark_image(im, color_count, scale=20, out_filename="out.png"):
             if brightness > (255 / 2):
                 color = 'black'
             hex_key = '{:02x}{:02x}{:02x}'.format(r, g, b)
-            fn = method_map.get(hex_key)  # get method by hex string (gross)
-            # print '%s => %s' % (hex_key, fn)
+            fn = method_map.get(hex_key)
             fn(d, cursor, scale, color)
             cursor = (cursor[0] + scale, cursor[1])
         cursor = (0, cursor[1] + scale)
@@ -186,22 +182,11 @@ def draw_triangle(d, origin, scale, color):
     d.line([top_pt, left_pt, right_pt, top_pt], fill=color)
 
 
-def draw_diamond(d, origin, scale, color):
-    shrink = scale / 4
-    width = height = scale - (2 * shrink)
-    t_origin = (origin[0] + shrink, origin[1] + shrink)
-    top_pt = (t_origin[0] + width / 2, t_origin[1])
-    left_pt = (t_origin[0], t_origin[1] + height)
-    right_pt = (t_origin[0] + width, t_origin[1] + height)
-    bottom_pt = ()
-    d.line([top_pt, left_pt, right_pt, top_pt], fill=color)
-
-
 if __name__ == "__main__":
     debug = False
     ip, port = '127.0.0.1', 3000
     if os.environ.get('ENV') == 'c9':
-    	ip, port ='0.0.0.0', 8080
-    	debug = True
-    logging.info("Running on IP {} and port {}".format(ip, port))
+        ip, port = '0.0.0.0', 8080
+        debug = True
+    logging.info("Running on IP %s and port %s", ip, port)
     app.run(ip, port, debug=debug)

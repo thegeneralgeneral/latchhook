@@ -5,8 +5,8 @@
 </head>
 <body>
 
-<table border="1px">
-<tr><th></th></th><th>Color</th><th>Hex</th><th>Count</th></tr>
+<table>
+<tr><th></th></th><th>Color</th><th>Hex</th><th>Count</th><th colspan="2"># packs</th></tr>
 {% for hex, count in color_count|dictsort %}
 <tr>
 <td><input type="checkbox"/></td>
