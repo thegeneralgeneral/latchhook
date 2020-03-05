@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageColor
 
 app = Flask(__name__)
 
-KEY_IMAGE_DIR = "static/images"
+KEY_IMAGE_DIR = "temp"
 
 
 @app.route("/")
@@ -72,7 +72,8 @@ def mark_image(im, color_count, scale=20, out_filename="out.png"):
     method_map = get_draw_method_map(color_count)
 
     # Create key
-    shutil.rmtree(KEY_IMAGE_DIR)
+    if os.path.isdir(KEY_IMAGE_DIR):
+        shutil.rmtree(KEY_IMAGE_DIR)
     os.mkdir(KEY_IMAGE_DIR)
     for key, method in method_map.items():
         logging.info('Creating key for (%s, %s)', key, method)
